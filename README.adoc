@@ -1,0 +1,29 @@
+== Showcase: Apicurio & AsyncAPI
+
+This showcase wants to evaluate the usage of Apicurio and AsyncAPI.
+Ideally, the project will fulfill the following:
+
+1. Example AsyncAPI specification is provided which references an Avro schema.
+
+2. The AsyncAPI and Avro specification are registered at an Apicurio instance.
+
+3. Clients can pull the specifications from Apicurio.
+
+4. Generation of messages and/or validation against the schemas is possible.
+
+5. Messages can be processed by Kafka and RabbitMQ in Avro format. Clients can process
+the messages independently from which broker the messages were received.
+
+=== Development Documentation - Notes
+
+- According to AsyncAPI, it is possible to https://github.com/asyncapi/playground/issues/30#issuecomment-681865570[reference external schemas] within the AsynAPI specification.
+Nevertheless, this feature is currently not supported by Apicurio. Therefore, the external references need to
+be resolved and managed by the client. https://github.com/Apicurio/apicurio-registry/issues/865[Support is planned for future releases].
+
+- The https://github.com/Apicurio/apicurio-data-models[data models library] by Apicurio adds functionalities for the usage of OpenAPI and AsynAPI
+specifications. It is possible to create a new specification and to read from existing documents. +
+If the API specification contains a schema definition (e.g., Avro), validation against this schema
+is *not* available. Schema validation has to be handled by custom client implementations.
+
+- The data models library includes the https://github.com/Apicurio/apicurio-data-models/blob/master/src/main/java/io/apicurio/datamodels/core/util/IReferenceResolver.java[_IReferenceResolver_] interface to pull and integrate external schema references.
+The implementation provided by Apicurio only supports resolving a reference to a JSON or Node object.
