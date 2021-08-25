@@ -1,4 +1,4 @@
-package common;
+package serde.rabbitmq;
 
 public interface RabbitMQConfig {
 

@@ -1,7 +1,7 @@
 ﻿{
   "asyncapi": "2.1.0",
   "info": {
-    "title": "Account Service",
+    "title": "Account Servic",
     "version": "1.0.0",
     "description": "Manages user accounts in the system.\n",
     "license": {
@@ -11,7 +11,7 @@
   },
   "servers": {
     "production": {
-      "url": "amqp://guest:guest@localhost:5672/vhost",
+      "url": "localhost:5672",
       "protocol": "amqp",
       "description": "Test RabbitMQ broker"
     }
@@ -26,7 +26,7 @@
           "contentType": "avro/binary",
           "schemaFormat": "application/vnd.apache.avro+json;version=1.9.0",
           "payload": {
-            "$ref": "http://localhost:8080/apis/registry/v2/groups/default/artifacts/user-schema/versions/1/#User"
+            "$ref": "http://localhost:8081/subjects/topic-value/versions/1"
           }
         }
       }

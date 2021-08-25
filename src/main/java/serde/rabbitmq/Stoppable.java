@@ -1,4 +1,4 @@
-package common;
+package serde.rabbitmq;
 
 import java.io.IOException;
 

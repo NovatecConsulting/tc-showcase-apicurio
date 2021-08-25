@@ -1,6 +1,4 @@
-import common.AMQPProducer;
-import common.RabbitMQConfig;
-import common.Stoppable;
+package serde.rabbitmq;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -26,7 +24,7 @@ public class Producer extends BaseClient implements AMQPProducer, Stoppable {
     public void sendStringMessage(String message) {
         try {
             getChannel().basicPublish("", getQueueName(), TEXT_PLAIN, message.getBytes(UTF_8));
-            System.out.println("Sent '" + message + "'");
+            log.info("Sent '" + message + "'");
         } catch (IOException e) {
             log.warning( "Message could not be delivered.");
         }
@@ -35,7 +33,7 @@ public class Producer extends BaseClient implements AMQPProducer, Stoppable {
     public void sendByteMessage(byte[] message) {
         try {
             getChannel().basicPublish("", getQueueName(), MINIMAL_BASIC, message);
-            System.out.println("Sent byte-array message.");
+            log.info("Sent byte-array message.");
         } catch (IOException e) {
             log.warning( "Message could not be delivered.");
         }

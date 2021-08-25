@@ -1,9 +1,10 @@
-package resolver;
+package serde.resolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -15,7 +16,9 @@ public class AbsoluteAvroReference extends AbstractAvroReference {
     private static CloseableHttpClient httpClient = HttpClients.createDefault();
 
     public AbsoluteAvroReference() {
+
     }
+
 
     @Override
     protected boolean accepts(URI uri) {

@@ -1,14 +1,90 @@
 version: '2'
 services:
+  #############################################################
+  # RabbitMQ                                     #
+  #############################################################
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: 'rabbitmq'
+    hostname: rabbitmq
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
 
+  #############################################################
+  # Apicurio Registry                                         #
+  #############################################################
   apicurioregistry:
-    image: apicurio/apicurio-registry-mem:2.0.1.Final
+    image: apicurio/apicurio-registry-kafkasql:2.0.1.Final
+    hostname: apicurio
+    container_name: apicurio
     ports:
       - "8080:8080"
+    environment:
+      - REGISTRY_KAFKASQL_TOPIC_AUTO_CREATE=true
+      - REGISTRY_KAFKASQL_TOPIC=kafkasql-journal
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+  #############################################################
+  # Apache Zookeeper (CP)                                     #
+  #############################################################
+  zookeeper:
+    image: confluentinc/cp-zookeeper:${VERSION_CONFLUENT}
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    ports:
+      - 12181:2181
+    # https://docs.confluent.io/current/zookeeper/deployment.html
+    # https://docs.confluent.io/current/installation/docker/config-reference.html#zk-configuration
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # (required) This is the port where ZooKeeper clients will listen on. This is where the Brokers will connect to ZooKeeper.
+      ZOOKEEPER_TICK_TIME: 2000 # (default: 3000) The unit of time for ZooKeeper translated to milliseconds. This governs all ZooKeeper time dependent operations. It is used for heartbeats and timeouts especially.
+
+  #############################################################
+  # Confluent Server (CP)                                     #
+  #############################################################
+  kafka:
+    image: confluentinc/cp-kafka:${VERSION_CONFLUENT}
+    hostname: kafka
+    container_name: kafka
+    restart: always
+    ports:
+      - 19092:19092
+    # https://docs.confluent.io/current/installation/configuration/broker-configs.html
+    # https://docs.confluent.io/current/installation/docker/config-reference.html#confluent-kafka-configuration
+    environment:
+      KAFKA_BROKER_ID: 1 # (default: -1) The broker id for this server. If unset, a unique broker id will be generated.
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # (required) Instructs Kafka how to get in touch with ZooKeeper.
+      KAFKA_CUB_ZK_TIMEOUT: 60 # (default: 40) Docker image setting, which specified the amount of time to wait for Zookeeper. Could be used, to get rid of Docker healthchecks.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT # (default: PLAINTEXT:PLAINTEXT,...) Map between listener names and security protocols. In this scenario this setting is used to define listeners with names.
+      KAFKA_LISTENERS: DOCKER://:9092,HOST://:19092 # (required) List of URIs we will listen on and the listener names. In this case, Kafka listens in both ports on all interfaces.
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka:9092,HOST://localhost:19092 # (required) Describes how the host name that is advertised and can be reached by clients. HOST://localhost:19092 enables access from Docker host.
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER # (default: PLAINTEXT) Name of listener used for communication between brokers.  By default, no dedicated listener is used.
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0 # (default: 3000) The amount of time the group coordinator will wait for more consumers to join a new group before performing the first rebalance. Set to 0 to ensure, that consumers start faster in dev environments.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false" # (default: true) We disabled auto creation of topics, to ensure that topics are created with the correct configuration. However, if defaults are fine, this could be enabled.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # (default: 3) The replication factor for the offsets topic. Must be 1, because we only have a single broker.
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # (default: 3) The replication factor for the transaction topic. Must be 1, because we only have a single broker.
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 # (default: 2) Overridden min.insync.replicas config for the transaction topic. Must be 1, because we only have a single broker.
+
+  #############################################################
+  # Confluent Schema Registry (CP)                            #
+  #############################################################
+  schema-registry:
+    image: confluentinc/cp-schema-registry:${VERSION_CONFLUENT}
+    hostname: schema-registry
+    container_name: schema-registry
+    restart: always
+    ports:
+      - 8081:8081
+      - 18081:8081
+    # https://docs.confluent.io/current/schema-registry/installation/config.html
+    # https://docs.confluent.io/current/installation/docker/config-reference.html#schema-registry-configuration
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry # (required) The advertised host name. Not reuqired in single host mode, but required by the image.
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081 # (default: http://0.0.0.0:8081) Comma-separated list of listeners that listen for API requests
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092 # (required) A list of Kafka brokers to connect. If kafkastore.connection.url is not specified, the Kafka cluster containing these bootstrap servers is used both to coordinate Schema Registry instances (primary election) and to store schema data.
+      SCHEMA_REGISTRY_CUB_KAFKA_TIMEOUT: 60 # (default: 40) Docker image setting, which specifies the amount of time to wait for Kafka. Could be used, to get rid of Docker healthchecks.
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1 # (default: 3) The desired replication factor of the schema topic. Must be 1, because we only have a single broker.
+      SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL: backward # (default: backward) The Avro compatibility type.
 

@@ -1,6 +1,7 @@
+package serde.rabbitmq;
+
 import com.rabbitmq.client.DeliverCallback;
-import common.AMQPConsumer;
-import common.RabbitMQConfig;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
@@ -22,11 +23,11 @@ public class Consumer extends BaseClient implements AMQPConsumer {
     @Override
     public void consumeMessages() {
         try {
-            System.out.println(" ... Waiting for messages. To exit press CTRL+C");
+            log.info(" ... Waiting for messages. To exit press CTRL+C");
             getChannel().basicQos(1);
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                System.out.println("Received message.");
+                log.info("Received message.");
                 getMessageHandler().accept(delivery.getBody());
                 getChannel().basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             };

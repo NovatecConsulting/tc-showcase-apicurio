@@ -1,44 +1,52 @@
+package serde;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apicurio.datamodels.Library;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.datamodels.core.models.Document;
-import io.apicurio.datamodels.core.models.Node;
 import io.apicurio.registry.rest.client.RegistryClient;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 import io.apicurio.registry.rest.v2.beans.IfExists;
 import io.apicurio.registry.types.ArtifactType;
 import org.apache.avro.Schema;
-import org.apache.commons.io.IOUtils;
-import resolver.AbsoluteAvroReference;
-
+import serde.resolver.AbsoluteAvroReference;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
-public class ApiRegistry {
+public class ApicurioRegistry {
     private final String REGISTRY_URL;
 
-    public ApiRegistry(String registryUrl) {
+    public ApicurioRegistry(String registryUrl) {
         REGISTRY_URL = registryUrl;
     }
 
-    public void registerArtifact(String artifactID, String apiResource, ArtifactType type) throws IOException {
-        try(InputStream input = ProducerApplication.class.getResource(apiResource).openStream()) {
+    /**
+     * Registers an artifact (e.g., AsyncAPI spec, avro schema) at Apicurio.
+     * @param artifactID unique ID for identification
+     * @param resourceAddress where resource is located locally
+     * @param type of which type the artifact is, e.g., AsyncAPI, OpenAPI etc.
+     * @throws IOException
+     */
+    public void registerArtifact(String artifactID, String resourceAddress, ArtifactType type) throws IOException {
+        try(InputStream input = ProducerApplication.class.getResource(resourceAddress).openStream()) {
             RegistryClient client = RegistryClientFactory.create(REGISTRY_URL);
-            //InputStream input = IOUtils.toInputStream(apiResource, StandardCharsets.UTF_8);
             client.createArtifact("default", artifactID, type, IfExists.UPDATE, input);
         }
     }
 
-    /*
-    TODO get Api definition via REST call
+    /**
+     * Gets the API definition with the specified artifactID from the registry and returns it
+     * as Document object (which corresponds to an AsyncAPI object).
+     * @param artifactID ID of the requested artifact
+     * @return artifact transformed into a Document object
+     * @throws IOException
      */
-    public Document getApiDefinition(String apiResource) throws IOException {
-        InputStream inputStream = ProducerApplication.class.getResource(apiResource).openStream();
-        ObjectMapper o = new ObjectMapper();
-        JsonNode node =  o.readTree(inputStream);
+    public Document getApiDefinition(String artifactID) throws IOException {
+        RegistryClient client = RegistryClientFactory.create(REGISTRY_URL);
+        InputStream inputStream = client.getLatestArtifact("default", artifactID);
+        JsonNode node =  new ObjectMapper().readTree(inputStream);
 
         return Library.readDocument(node);
     }

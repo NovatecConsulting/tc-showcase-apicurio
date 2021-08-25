@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.commercehub.gradle.plugin.avro' version '0.99.99'
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.2.1"
 }
 
 apply plugin: "groovy"
@@ -10,6 +10,9 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://packages.confluent.io/maven/'
+    }
 }
 
 sourceSets {
@@ -35,15 +38,21 @@ dependencies {
     testImplementation group: 'io.apicurio', name: 'apicurio-registry-client', version: '2.0.1.Final'
     implementation group: 'io.apicurio', name: 'apicurio-registry-serdes-jsonschema-serde', version: '2.0.1.Final'
     implementation group: 'io.apicurio', name: 'apicurio-registry-serdes-avro-serde', version: '2.0.1.Final'
-    implementation 'io.apicurio:apicurio-data-models:1.1.13'
     implementation 'org.apache.avro:avro:1.10.2'
     implementation 'org.apache.avro:avro-compiler:1.10.2'
+    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '6.2.0'
+    implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: '6.2.0'
+    implementation "org.apache.avro:avro:1.2.1"
+    implementation group: 'io.apicurio', name: 'apicurio-data-models', version: '1.1.14'
+
 
     // mandatory dependencies for using Spock
-    compile "org.codehaus.groovy:groovy:3.0.7"
-    testCompile platform("org.spockframework:spock-bom:2.0-M4-groovy-3.0")
-    testCompile "org.spockframework:spock-core"
-    testCompile "org.testcontainers:spock:1.15.3"
+    implementation "org.codehaus.groovy:groovy:3.0.7"
+    testImplementation platform("org.spockframework:spock-bom:2.0-M4-groovy-3.0")
+    testImplementation "org.spockframework:spock-core"
+    testImplementation "org.testcontainers:spock:1.15.3"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.7.2"
 }
 
 test {
