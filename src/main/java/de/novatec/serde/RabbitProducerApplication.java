@@ -1,11 +1,13 @@
-package serde;
+package de.novatec.serde;
 
 import com.acme.avro.User;
+import de.novatec.serde.registry.ApicurioRegistry;
+import de.novatec.serde.registry.SchemaRegistry;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
-import io.apicurio.datamodels.core.models.Document;
 import io.apicurio.registry.types.ArtifactType;
-import serde.rabbitmq.EnvRabbitMQConfig;
-import serde.rabbitmq.Producer;
+import de.novatec.serde.rabbitmq.EnvRabbitMQConfig;
+import de.novatec.serde.rabbitmq.Producer;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 
 import java.io.IOException;
 import java.util.Date;
@@ -14,8 +16,8 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-public class ProducerApplication {
-    private static final Logger log = Logger.getLogger(ProducerApplication.class.getName());
+public class RabbitProducerApplication {
+    private static final Logger log = Logger.getLogger(RabbitProducerApplication.class.getName());
     private final static String APICURIO_REGISTRY_URL = "http://localhost:8080/apis/registry/v2";
     private final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
     private final static String TOPIC_NAME = "topic";
@@ -23,7 +25,7 @@ public class ProducerApplication {
     private final static String API_RESOURCE = "/asyncapi.json";
     private final static Serde SERDE = new Serde();
 
-    public static void main(String[] args) throws IOException, TimeoutException {
+    public static void main(String[] args) throws IOException, TimeoutException, RestClientException {
         //register avro schema at Schema Registry
         SchemaRegistry schemaRegistry = new SchemaRegistry(SCHEMA_REGISTRY_URL);
         schemaRegistry.registerAtSchemaRegistry(TOPIC_NAME);

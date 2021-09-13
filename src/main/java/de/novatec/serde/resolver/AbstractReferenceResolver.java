@@ -1,4 +1,4 @@
-package serde.resolver;
+package de.novatec.serde.resolver;
 
 /*
  * Copyright 2019 JBoss Inc
@@ -65,7 +65,7 @@ public abstract class AbstractReferenceResolver implements IReferenceResolver {
     }
 
     /**
-     * Returns true if this serde.resolver accepts the given URI, indicating that this serde.resolver
+     * Returns true if this de.novatec.serde.resolver accepts the given URI, indicating that this de.novatec.serde.resolver
      * is capable of resolving the reference.
      * @param uri
      */

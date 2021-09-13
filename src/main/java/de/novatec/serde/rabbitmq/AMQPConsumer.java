@@ -1,4 +1,4 @@
-package serde.rabbitmq;
+package de.novatec.serde.rabbitmq;
 
 import java.io.IOException;
 

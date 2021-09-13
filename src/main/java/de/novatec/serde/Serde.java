@@ -1,15 +1,12 @@
-package serde;
+package de.novatec.serde;
 
-import com.acme.avro.User;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.*;
 import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.specific.SpecificRecord;
-import serde.ProducerApplication;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,7 +14,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public class Serde {
-    private static final Logger log = Logger.getLogger(ProducerApplication.class.getName());
+    private static final Logger log = Logger.getLogger(Serde.class.getName());
 
     public <T extends GenericRecord> byte[] encodeToAvro(T record) throws IOException {
         GenericDatumWriter<T> specificWriter = new GenericDatumWriter<>();

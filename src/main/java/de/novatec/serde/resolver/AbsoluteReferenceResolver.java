@@ -1,4 +1,4 @@
-package serde.resolver;
+package de.novatec.serde.resolver;
 
 import java.io.IOException;
 import java.io.InputStream;

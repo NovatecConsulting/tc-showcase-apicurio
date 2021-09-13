@@ -1,19 +1,22 @@
-package serde;
+package de.novatec.serde.registry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.novatec.serde.RabbitProducerApplication;
 import io.apicurio.datamodels.Library;
 import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.datamodels.core.models.Document;
+import io.apicurio.datamodels.core.util.IReferenceResolver;
 import io.apicurio.registry.rest.client.RegistryClient;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
 import io.apicurio.registry.rest.v2.beans.IfExists;
 import io.apicurio.registry.types.ArtifactType;
 import org.apache.avro.Schema;
-import serde.resolver.AbsoluteAvroReference;
+import de.novatec.serde.resolver.AbsoluteAvroReference;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 public class ApicurioRegistry {
     private final String REGISTRY_URL;
@@ -30,7 +33,7 @@ public class ApicurioRegistry {
      * @throws IOException
      */
     public void registerArtifact(String artifactID, String resourceAddress, ArtifactType type) throws IOException {
-        try(InputStream input = ProducerApplication.class.getResource(resourceAddress).openStream()) {
+        try(InputStream input = Objects.requireNonNull(RabbitProducerApplication.class.getResource(resourceAddress)).openStream()) {
             RegistryClient client = RegistryClientFactory.create(REGISTRY_URL);
             client.createArtifact("default", artifactID, type, IfExists.UPDATE, input);
         }
