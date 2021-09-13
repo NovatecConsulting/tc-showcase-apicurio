@@ -22,10 +22,13 @@ public class RabbitConsumerApplication {
     public static void main(String[] args) throws IOException, TimeoutException {
         //get API definition from Apicurio
         ApicurioRegistry apicurioRegistry = new ApicurioRegistry(REGISTRY_URL);
+
         Document apiDefinition = apicurioRegistry.getApiDefinition(ARTIFACT_API);
+        assert apiDefinition != null;
 
         //get avro schema that is referenced in API definition
         avroSchema = apicurioRegistry.getAvroMessageSchema(apiDefinition, CHANNEL_NAME);
+        assert avroSchema != null;
 
         //consume messages from RabbitMQ
         Consumer consumer = new Consumer(new EnvRabbitMQConfig(), RabbitConsumerApplication::processMessage);

@@ -36,6 +36,8 @@ public class RabbitProducerApplication {
 
         //get API definition and specified url of the broker
         AaiDocument apiDefinition = (AaiDocument) apicurioRegistry.getApiDefinition(ARTIFACT_API);
+        assert apiDefinition != null;
+
         String url = apiDefinition.servers.get("production").url;
         Map<String, String> rabbitMQConfig = new HashMap<>();
         rabbitMQConfig.put("HOST", url.split(":")[0]);

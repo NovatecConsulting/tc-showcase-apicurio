@@ -60,7 +60,7 @@ The default implementation can in principle already resolve external references 
 
 However, the data models library only checks objects for external references if the https://github.com/Apicurio/apicurio-data-models/blob/master/src/main/java/io/apicurio/datamodels/openapi/visitors/dereference/Dereferencer.java[implement the IReferenceNode interface]. While the https://github.com/Apicurio/apicurio-data-models/blob/master/src/main/java/io/apicurio/datamodels/asyncapi/models/AaiMessageBase.java[message object] implements this interface, the https://github.com/Apicurio/apicurio-data-models/blob/master/src/main/java/io/apicurio/datamodels/asyncapi/models/AaiMessage.java[payload object] in the data models library is only of type "Object". The payload object is therefore not checked for external references, so they remain unresolved.
 
-== Message Exchange
+=== Message Exchange
 The scenario shown in the diagram in section 2 can in principle be implemented using Apicurio, Schema Registry and RabbitMQ. However, some custom implementations are required to resolve the externally referenced Avro schema. This makes the implementation more complicated than necessary.
 
 However, this is only true if the external reference is supposed to be inserted into the AsyncAPI definition. If the API definition does not contain external references and has a simpler structure or resolution is not necessary, this problem does not even occur.
