@@ -1,0 +1,24 @@
+{
+  "name": "User",
+  "type": "record",
+  "namespace": "com.acme.avro.v2",
+  "fields": [
+    {
+      "name": "firstName",
+      "type": "string"
+    },
+    {
+      "name": "lastName",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "createdAt",
+      "type": "string"
+    }
+
+  ]
+}

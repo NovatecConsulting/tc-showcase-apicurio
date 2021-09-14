@@ -3,6 +3,7 @@ package de.novatec.serde;
 import de.novatec.serde.rabbitmq.Consumer;
 import de.novatec.serde.rabbitmq.EnvRabbitMQConfig;
 import de.novatec.serde.registry.ApicurioRegistry;
+import de.novatec.serde.registry.NoSuchElementException;
 import io.apicurio.datamodels.core.models.Document;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -23,16 +24,15 @@ public class RabbitConsumerApplication {
         //get API definition from Apicurio
         ApicurioRegistry apicurioRegistry = new ApicurioRegistry(REGISTRY_URL);
 
-        Document apiDefinition = apicurioRegistry.getApiDefinition(ARTIFACT_API);
-        assert apiDefinition != null;
+        try {
+            Document apiDefinition = apicurioRegistry.getApiDefinition(ARTIFACT_API);
+            avroSchema = apicurioRegistry.getAvroMessageSchema(apiDefinition, CHANNEL_NAME);
 
-        //get avro schema that is referenced in API definition
-        avroSchema = apicurioRegistry.getAvroMessageSchema(apiDefinition, CHANNEL_NAME);
-        assert avroSchema != null;
-
-        //consume messages from RabbitMQ
-        Consumer consumer = new Consumer(new EnvRabbitMQConfig(), RabbitConsumerApplication::processMessage);
-        consumer.consumeMessages();
+            Consumer consumer = new Consumer(new EnvRabbitMQConfig(), RabbitConsumerApplication::processMessage);
+            consumer.consumeMessages();
+        }catch (NoSuchElementException e) {
+            log.warning("Message sending was not successful. Check resources and IDs.");
+        }
 
         log.info("ConsumerApplication finished.");
     }
