@@ -37,8 +37,14 @@ As already partially visible in the diagram above, the Producer and Consumer app
 Avro schemas can be registered at Schema Registry using the Schema Registry library by Confluent. A topic/subject name needs to be provided for each new schema. Alternatively, it is also possible to use the SpecificAvroSerializer for schema registration. The schema will be registered automatically when an object is serialized and the class/schema it belongs to is not already present.
 
 === Apicurio Registry Registration & Access
-Apicurio also provides a library to access and manage the artifacts located at the registry. For each artifact, a unique
-ID is required for identification. +
+In contrast to the Confluent Schema Registry, Apicurio is not limited to message schemas, but also supports API specifications as already mentioned. The Confluent Schema Registry could therefore also be completely replaced by Apicurio. +
+However, this is probably only true if the architecture is not mainly based on a Confluent ecosystem.
+Depending on the use case, Apicurio can therefore be a useful addition to the Schema Registry due to the additionally supported formats.
+
+
+Apicurio also provides a library to access and manage the artifacts located at the registry. Similar to Schema Registry, a unique ID is required for each artifact.
+
+
 
 === AsyncAPI and Apicurio Registry
 Apicurio puts an emphasis on OpenAPI support, which can be seen from the fact that Apicurio Studio was developed for OpenAPI. Apicurio Registry supports several formats, including AsyncAPI. Nevertheless, not all specification details of AsyncAPI are supported yet, which is also due to the fast development of AsyncAPI.
@@ -78,7 +84,10 @@ With Modelina, data models can be generated from AsyncAPI definitions, as it is 
 The https://github.com/asyncapi/avro-schema-parser[Avro Schema Parser] Tool allows to resolve Avro schemas in the payload of messages (as would be desirable for Apicurio and explained in Section 4.4). Unfortunately, it looks like this tool is only available for JavaScript and no other programming language.
 
 == Conclusion
-Apicurio can currently be used for AsyncAPI definitions with a few special restrictions. Nevertheless, AsyncAPI is still in a dynamic development and is getting more and more popularity. It is expected that with widespread use of AsyncAPI, some features will be added for use with Apicurio.
+Apicurio can currently be used for AsyncAPI definitions with a few special restrictions. Nevertheless, AsyncAPI is still in a dynamic development and is getting more and more popularity. It is expected that with widespread use of AsyncAPI, some features will be added for use with Apicurio. +
+For example, a rendered representation of the AsyncAPI definitions would be desirable. https://github.com/Apicurio/apicurio-studio/issues/447[In this Github issue] it was already discussed to support AsyncAPI in Apicurio Studio.
+
+The Apicurio Data Models Library has not proven to be the best solution for using AsyncAPI definitions in Java clients. However, the Modelina library of AsyncAPI seems to be another possibility that should be evaluated.
 
 At the same time, the AsyncAPI team is currently developing https://github.com/asyncapi/studio[AsyncAPI Studio]. According to the documentation, Studio will be similar to Apicurio Studio, which focuses on the use with OpenAPI.
 
