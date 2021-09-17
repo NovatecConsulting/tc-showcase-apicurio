@@ -3,7 +3,8 @@ package de.novatec.serde;
 import de.novatec.serde.rabbitmq.Consumer;
 import de.novatec.serde.rabbitmq.EnvRabbitMQConfig;
 import de.novatec.serde.registry.ApicurioRegistry;
-import de.novatec.serde.registry.NoSuchElementException;
+import de.novatec.serde.registry.NoPayloadException;
+import de.novatec.serde.registry.NoSuchChannelException;
 import io.apicurio.datamodels.core.models.Document;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -30,7 +31,7 @@ public class RabbitConsumerApplication {
 
             Consumer consumer = new Consumer(new EnvRabbitMQConfig(), RabbitConsumerApplication::processMessage);
             consumer.consumeMessages();
-        }catch (NoSuchElementException e) {
+        }catch (NoSuchChannelException | NoPayloadException e) {
             log.warning("Message sending was not successful. Check resources and IDs.");
         }
 

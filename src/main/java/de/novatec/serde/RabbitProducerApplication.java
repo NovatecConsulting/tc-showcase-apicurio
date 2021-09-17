@@ -1,14 +1,12 @@
 package de.novatec.serde;
 
 import com.acme.avro.User;
+import de.novatec.serde.rabbitmq.EnvRabbitMQConfig;
+import de.novatec.serde.rabbitmq.Producer;
 import de.novatec.serde.registry.ApicurioRegistry;
-import de.novatec.serde.registry.NoSuchElementException;
 import de.novatec.serde.registry.SchemaRegistry;
 import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.registry.types.ArtifactType;
-import de.novatec.serde.rabbitmq.EnvRabbitMQConfig;
-import de.novatec.serde.rabbitmq.Producer;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 
 import java.io.IOException;
 import java.util.Date;
@@ -26,7 +24,7 @@ public class RabbitProducerApplication {
     private final static String API_RESOURCE = "/asyncapi.json";
     private final static Serde SERDE = new Serde();
 
-    public static void main(String[] args) throws IOException, TimeoutException, RestClientException {
+    public static void main(String[] args) throws IOException, TimeoutException {
         //register avro schema at Schema Registry
         SchemaRegistry schemaRegistry = new SchemaRegistry(SCHEMA_REGISTRY_URL);
         schemaRegistry.registerAtSchemaRegistry(User.getClassSchema(), TOPIC_NAME);
@@ -36,22 +34,18 @@ public class RabbitProducerApplication {
         apicurioRegistry.registerArtifact(ARTIFACT_API, API_RESOURCE, ArtifactType.ASYNCAPI);
 
         //get API definition and specified url of the broker
-        try {
-            AaiDocument apiDefinition = (AaiDocument) apicurioRegistry.getApiDefinition(ARTIFACT_API);
+        AaiDocument apiDefinition = (AaiDocument) apicurioRegistry.getApiDefinition(ARTIFACT_API);
 
-            String url = apiDefinition.servers.get("production").url;
-            Map<String, String> rabbitMQConfig = new HashMap<>();
-            rabbitMQConfig.put("HOST", url.split(":")[0]);
-            rabbitMQConfig.put("PORT", url.split(":")[1]);
+        String url = apiDefinition.servers.get("production").url;
+        Map<String, String> rabbitMQConfig = new HashMap<>();
+        rabbitMQConfig.put("HOST", url.split(":")[0]);
+        rabbitMQConfig.put("PORT", url.split(":")[1]);
 
-            //create a user and send it to the RabbitMQ broker
-            Producer producer = new Producer(new EnvRabbitMQConfig(rabbitMQConfig));
-            User user = new User("Max", "Mustermann", "max.muster@mail.com", String.valueOf(new Date().getTime()));
-            producer.sendByteMessage(SERDE.encodeToAvro(user));
-            producer.stop();
-        }catch (NoSuchElementException e) {
-            log.warning("Could not get API definition. Check resources and IDs.");
-        }
+        //create a user and send it to the RabbitMQ broker
+        Producer producer = new Producer(new EnvRabbitMQConfig(rabbitMQConfig));
+        User user = new User("Max", "Mustermann", "max.muster@mail.com", String.valueOf(new Date().getTime()));
+        producer.sendByteMessage(SERDE.encodeToAvro(user));
+        producer.stop();
 
         log.info("ProducerApplication finished.");
     }

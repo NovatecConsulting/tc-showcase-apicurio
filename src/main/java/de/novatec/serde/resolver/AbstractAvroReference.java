@@ -37,13 +37,15 @@ public abstract class AbstractAvroReference {
         }
 
         //distinguish between Schema Registry and Apicurio Registry
-        Schema externalContentRoot = null;
-        if(referenceUri.getPort() == 8080) {
-            externalContentRoot = parseApicurioRegistryUriContent(externalContent);
-        }else if(referenceUri.getPort() == 8081) {
+        //=> both return the registered schemas in a different format
+        Schema externalContentRoot;
+        if(referenceUri.getPort() == 8081) {
+            //TODO do not distinguish on basis of port
+            //TODO instead one method for all types of registries, distinguish on returned document format
             externalContentRoot = parseSchemaRegistryUriContent(externalContent);
         }else {
-            System.out.println("TODO Exception");
+            //Apicurio as default registry
+            externalContentRoot = parseApicurioRegistryUriContent(externalContent);
         }
 
         if (externalContentRoot == null) {

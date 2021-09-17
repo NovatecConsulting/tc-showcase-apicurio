@@ -26,7 +26,7 @@
           "contentType": "avro/binary",
           "schemaFormat": "application/vnd.apache.avro+json;version=1.9.0",
           "payload": {
-            "$ref": "http://localhost:8080/api/artifacts/test/versions/1"
+            "$ref": "http://localhost:8080/apis/registry/v2/groups/default/artifacts/user-schema/versions/1/#User"
           }
         }
       }

@@ -2,6 +2,8 @@ package de.novatec.serde.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apicurio.datamodels.Library;
+import io.apicurio.datamodels.asyncapi.models.AaiChannelItem;
+import io.apicurio.datamodels.asyncapi.models.AaiDocument;
 import io.apicurio.datamodels.core.models.Document;
 import io.apicurio.registry.rest.client.RegistryClient;
 import io.apicurio.registry.rest.client.RegistryClientFactory;
@@ -55,71 +57,100 @@ public class ApicurioRegistryTest {
 
     @Test
     public void shouldRegisterArtifact() throws IOException {
+        // Given
         InputStream newArtifact = ApicurioRegistryTest.class.getResourceAsStream(API_RESOURCE);
-        assert newArtifact != null;
+
+        // When
         registry.registerArtifact(ARTIFACT_API, API_RESOURCE, ArtifactType.ASYNCAPI);
 
+        // Then
         RegistryClient client = RegistryClientFactory.create(APICURIO_REGISTRY_URL);
         InputStream registeredArtifact = client.getLatestArtifact("default", ARTIFACT_API);
-
         Assertions.assertArrayEquals(newArtifact.readAllBytes(), registeredArtifact.readAllBytes());
     }
 
     @Test
     public void shouldNotRegisterArtifact() {
+        // When
         registry.registerArtifact(ARTIFACT_API, WRONG_API_RESOURCE, ArtifactType.ASYNCAPI);
         RegistryClient client = RegistryClientFactory.create(APICURIO_REGISTRY_URL);
 
+        // Then
         Assertions.assertThrows(ArtifactNotFoundException.class, () ->
                 client.getLatestArtifact("default", ARTIFACT_API));
     }
 
     @Test
-    public void shouldReturnRegisteredArtifactAsDocument() throws IOException, NoSuchElementException {
+    public void shouldReturnRegisteredArtifactAsDocument() throws IOException {
+        //  Given
         registerArtifact(ARTIFACT_API, API_RESOURCE, ArtifactType.ASYNCAPI);
-
         InputStream registerStream = ApicurioRegistryTest.class.getResourceAsStream(API_RESOURCE);
         Document expectedDocument = Library.readDocument(new ObjectMapper().readTree(registerStream));
         String expectedString = Library.writeDocumentToJSONString(expectedDocument);
 
+        // When
         Document returnedDocument = registry.getApiDefinition(ARTIFACT_API);
         String returnedString = Library.writeDocumentToJSONString(returnedDocument);
 
+        // Then
         Assertions.assertNotNull(returnedDocument);
         Assertions.assertEquals(expectedString, returnedString); //convert to strings for comparison
     }
 
     @Test
     public void shouldThrowExceptionForGetDefinition() {
-        Assertions.assertThrows(NoSuchElementException.class, () -> registry.getApiDefinition(WRONG_ARTIFACT_API));
+        Assertions.assertThrows(ArtifactNotFoundException.class, () -> registry.getApiDefinition(WRONG_ARTIFACT_API));
     }
 
     @Test
-    public void shouldThrowNoSuchElementExceptionWithoutPayload() throws IOException {
+    public void shouldThrowNoPayloadExceptionWithoutPayload() throws IOException {
+        // Given
         Document noPayloadAsyncApi = resourceToDocument(NO_PAYLOAD_RESOURCE);
 
-        Assertions.assertThrows(NoSuchElementException.class, () ->
+        // When/Then
+        Assertions.assertThrows(NoPayloadException.class, () ->
                 registry.getAvroMessageSchema(noPayloadAsyncApi, CHANNEL_NAME));
     }
 
     @Test
-    public void shouldThrowNoSuchElementExceptionWithWrongChannel() throws IOException {
+    public void shouldThrowNoSuchChannelExceptionWithWrongChannel() throws IOException {
+        // Given
         Document wrongChannelAsyncApi = resourceToDocument(WRONG_CHANNEL_RESOURCE);
 
-        Assertions.assertThrows(NoSuchElementException.class, () ->
+        // When/Then
+        Assertions.assertThrows(NoSuchChannelException.class, () ->
                 registry.getAvroMessageSchema(wrongChannelAsyncApi, CHANNEL_NAME));
     }
 
     @Test
-    public void shouldReturnAvroSchema() throws IOException, NoSuchElementException {
+    public void shouldReturnAvroSchema() throws IOException, NoSuchChannelException, NoPayloadException {
+        // Given
         registerArtifact("User", AVRO_RESOURCE, ArtifactType.AVRO);
-        Document asyncapi = resourceToDocument(API_RESOURCE);
+        Document asyncapi = adjustReferenceUrl(API_RESOURCE);
 
+        // When
         Schema returnedSchema = registry.getAvroMessageSchema(asyncapi, CHANNEL_NAME);
+
+        // Then
         InputStream input = ApicurioRegistryTest.class.getResourceAsStream(AVRO_RESOURCE);
         Schema expectedSchema = new Schema.Parser().parse(input);
-
         Assertions.assertEquals(expectedSchema, returnedSchema);
+    }
+
+    private Document adjustReferenceUrl(String resourceAddress) throws IOException {
+        // since the environment of each testcontainer is always different,
+        // the url in the payload reference needs to be adjusted to the test environment
+        Document asyncapi = resourceToDocument(resourceAddress);
+        AaiDocument asyncDocument = (AaiDocument) asyncapi;
+        AaiChannelItem item = asyncDocument.channels.get(CHANNEL_NAME);
+
+        item.subscribe.message.payload =
+                "{$ref:\"" +
+                APICURIO_REGISTRY_URL +
+                "/groups/default/artifacts/User/versions/1/#User" +
+                "\"}";
+
+        return asyncapi;
     }
 
     private Document resourceToDocument(String resourceAddress) throws IOException {
